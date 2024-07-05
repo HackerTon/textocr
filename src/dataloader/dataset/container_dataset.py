@@ -3,6 +3,7 @@ from pathlib import Path
 
 from torch.utils.data import Dataset
 from torchvision.io.image import ImageReadMode, read_image
+from torchvision.transforms.functional import rotate
 
 
 class ContainerOCRDatasetText(Dataset):
@@ -48,6 +49,10 @@ class ContainerOCRDatasetText(Dataset):
         text = self.image_label[index]["image_filename"].split("_")[1]
         x1, y1, x2, y2 = self.image_label[index]["bbox"]
         original_image = image[..., y1:y2, x1:x2]
+
+        h, w = abs(y1 - y2), abs(x1 - x2)
+        if h > w:
+            original_image = rotate(original_image, angle=90, expand=True)
         return original_image, text
 
 
