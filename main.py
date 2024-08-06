@@ -1,6 +1,7 @@
 import argparse
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 from src.service.hyperparamater import Hyperparameter
 from src.service.trainer import Trainer
@@ -38,6 +39,8 @@ def run(
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
     parser.add_argument("-e", "--epoch", default=50, type=int)
     parser.add_argument("-n", "--name", type=str, required=True)

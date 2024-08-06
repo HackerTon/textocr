@@ -2,7 +2,7 @@ from typing import Tuple
 
 import torch
 from src.dataloader.dataset.container_dataset import CardiacDataset
-from src.experiment.experimentbase import ExperimentBase
+from src.experiment.experiment_base import ExperimentBase
 from torch.utils.data import random_split
 from torch.utils.data.dataloader import DataLoader
 from torchvision.transforms import v2

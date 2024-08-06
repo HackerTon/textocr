@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, random_split
 from src.experiment.experiment_base import ExperimentBase
 from src.model.model import TextOcrModel
 from src.service.hyperparamater import Hyperparameter
-from src.dataloader.dataset.container_dataset import ContainerOCRDatasetText
+from src.dataloader.dataset.captcha_dataset import CaptchaDataset
 
 
 class TextocrExperiment(ExperimentBase):
@@ -13,7 +13,7 @@ class TextocrExperiment(ExperimentBase):
         super().__init__()
 
         # Initialization
-        self.train_dataloader, self.test_dataloader = self.create_textocr_dataloader(
+        self.train_dataloader, self.test_dataloader = self.create_dataloader(
             path=hyperparameter.data_path,
             batch_size=hyperparameter.batch_size_train,
         )
@@ -36,12 +36,12 @@ class TextocrExperiment(ExperimentBase):
             batched_label.append(label)
         return batched_image, batched_label
 
-    def create_textocr_dataloader(
+    def create_dataloader(
         self,
         path: str,
         batch_size: int,
     ) -> Tuple[DataLoader, DataLoader]:
-        dataset = ContainerOCRDatasetText(path)
+        dataset = CaptchaDataset(path)
         length_dataset = len(dataset)
         train_length = int(length_dataset * 0.8)
         test_length = length_dataset - train_length
@@ -67,7 +67,9 @@ class TextocrExperiment(ExperimentBase):
 
 
 if __name__ == "__main__":
-    hyperparameter = Hyperparameter(None, 0.05, 10, 10, "data/container_dataset")
+    hyperparameter = Hyperparameter(
+        None, 0.05, 10, 10, "project-2-at-2024-08-06-07-03-5a7af7f3.json"
+    )
     experiment = TextocrExperiment(hyperparameter, "cpu")
     for image, label in experiment.train_dataloader:
         break
