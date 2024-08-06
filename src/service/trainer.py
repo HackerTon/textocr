@@ -10,11 +10,8 @@ from torch.utils.tensorboard.writer import SummaryWriter
 from torchvision.transforms import v2
 
 from src.experiment.captcha_experiment import CaptchaExperiment
-from src.loss import dice_index, total_loss
 from src.service.hyperparamater import Hyperparameter
 from src.service.model_saver_service import ModelSaverService
-from ..utils.utils import generate_visualization
-from loss import compute_cer
 
 from tqdm import tqdm
 
@@ -66,8 +63,8 @@ class Trainer:
             dataloader_train=train_dataloader,
             dataloader_test=test_dataloader,
             optimizer=optimizer,
+            loss_fn=None,
             scheduler=scheduler,
-            loss_fn=total_loss,
             preprocess=preprocessor,
             device=device,
         )
@@ -98,10 +95,10 @@ class Trainer:
                 model=model,
                 dataloader=dataloader_train,
                 optimizer=optimizer,
-                loss_fn=loss_fn,
                 preprocess=preprocess,
                 device=device,
                 dtype=dtype,
+                loss_fn=None,
                 scheduler=scheduler,
             )
             time_taken = time.time() - initial_time
@@ -109,16 +106,16 @@ class Trainer:
 
             if dataloader_test is not None:
                 pass
-                # self._eval_one_epoch(
-                #     epoch=epoch,
-                #     model=model,
-                #     dataloader=dataloader_test,
-                #     loss_fn=loss_fn,
-                #     preprocess=preprocess,
-                #     device=device,
-                #     train_dataset_length=len(dataloader_train),
-                #     dtype=dtype,
-                # )
+                self._eval_one_epoch(
+                    epoch=epoch,
+                    model=model,
+                    dataloader=dataloader_test,
+                    preprocess=preprocess,
+                    device=device,
+                    loss_fn=None,
+                    train_dataset_length=len(dataloader_train),
+                    dtype=dtype,
+                )
                 # self._visualize_one_epoch(
                 #     epoch=epoch,
                 #     model=model,
@@ -173,45 +170,30 @@ class Trainer:
                 )
                 running_loss = 0.0
 
-    # def _eval_one_epoch(
-    #     self,
-    #     epoch: int,
-    #     model: torch.nn.Module,
-    #     dataloader: DataLoader,
-    #     preprocess: v2.Compose,
-    #     loss_fn,
-    #     device: str,
-    #     train_dataset_length: int,
-    #     dtype,
-    # ):
-    #     sum_loss = 0.0
-    #     sum_iou = 0.0
+    def _eval_one_epoch(
+        self,
+        epoch: int,
+        model: torch.nn.Module,
+        dataloader: DataLoader,
+        preprocess: v2.Compose,
+        loss_fn,
+        device: str,
+        train_dataset_length: int,
+        dtype,
+    ):
+        sum_loss = 0.0
 
-    #     with torch.no_grad():
-    #         with torch.autocast(device_type=device, dtype=dtype):
-    #             for data in dataloader:
-    #                 inputs: torch.Tensor
-    #                 labels: torch.Tensor
-    #                 inputs, labels = data
+        with torch.no_grad():
+            with torch.autocast(device_type=device, dtype=dtype):
+                for data in dataloader:
+                    inputs, labels = data
+                    outputs = model(inputs, labels, device)
 
-    #                 inputs, labels = inputs.to(device), labels.to(device)
-    #                 inputs, labels = preprocess(inputs, labels)
+        sum_loss += outputs.loss.item()
+        iteration = (epoch + 1) * train_dataset_length
+        avg_loss = sum_loss / len(dataloader)
 
-    #                 outputs = model(inputs, labels)
-    #                 loss = outputs.loss
-    #                 generated_ids = model.generate(inputs)
-
-    #                 sum_loss += loss.item()
-    #                 sum_iou += compute_cer(
-    #                     generated_ids,
-    #                 )
-
-    #     iteration = (epoch + 1) * train_dataset_length
-    #     avg_loss = sum_loss / len(dataloader)
-    #     avg_cert = sum_iou / len(dataloader)
-
-    #     self.writer_test.add_scalar("loss", avg_loss, iteration)
-    #     self.writer_test.add_scalar("cer", avg_cer, iteration)
+        self.writer_test.add_scalar("loss", avg_loss, iteration)
 
     # def _visualize_one_epoch(
     #     self,
