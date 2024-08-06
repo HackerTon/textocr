@@ -8,7 +8,7 @@ from src.service.hyperparamater import Hyperparameter
 from src.dataloader.dataset.captcha_dataset import CaptchaDataset
 
 
-class TextocrExperiment(ExperimentBase):
+class CaptchaExperiment(ExperimentBase):
     def __init__(self, hyperparameter: Hyperparameter, device: str) -> None:
         super().__init__()
 
@@ -53,23 +53,21 @@ class TextocrExperiment(ExperimentBase):
             train_dataset,
             shuffle=True,
             batch_size=batch_size,
-            num_workers=4,
-            collate_fn=self.collate_fn,
+            num_workers=1,
         )
         test_dataloader = DataLoader(
             test_dataset,
             shuffle=False,
             batch_size=batch_size,
-            num_workers=4,
-            collate_fn=self.collate_fn,
+            num_workers=1,
         )
         return train_dataloader, test_dataloader
 
 
 if __name__ == "__main__":
     hyperparameter = Hyperparameter(
-        None, 0.05, 10, 10, "project-2-at-2024-08-06-07-03-5a7af7f3.json"
+        None, 0.05, 10, 10, "project-2-at-2024-08-06-09-14-931e265d.json"
     )
-    experiment = TextocrExperiment(hyperparameter, "cpu")
+    experiment = CaptchaExperiment(hyperparameter, "cpu")
     for image, label in experiment.train_dataloader:
-        break
+        print(label)

@@ -1,3 +1,4 @@
+from datasets import load_metric
 import torch
 
 
@@ -31,3 +32,24 @@ def total_loss(pred: torch.Tensor, target: torch.Tensor):
     )
     dice_loss = 1 - dice_index(pred.sigmoid(), target)
     return crossentropy_loss + dice_loss
+
+
+cer_metric = load_metric("cer")
+
+
+def compute_cer(pred_ids, label_ids, processor):
+    sum_cer = 0
+    for pred, label in zip(pred_ids, label_ids):
+        pred_str = processor.decode(pred, skip_special_tokens=True)
+        label_ids[label_ids == -100] = processor.tokenizer.pad_token_id
+        label_str = processor.decode(label, skip_special_tokens=True)
+
+        if pred_str == "":
+            sum_cer += len(label_str)
+        elif label_str == "":
+            sum_cer += len(pred_str)
+        else:
+            sum_cer += cer_metric.compute(
+                predictions=[pred_str], references=[label_str]
+            )
+    return sum_cer / len(pred_ids)

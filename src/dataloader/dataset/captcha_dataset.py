@@ -1,5 +1,6 @@
 import boto3
 import os
+import torch
 import orjson
 from torch.utils.data import Dataset
 from pathlib import Path
@@ -54,17 +55,22 @@ class CaptchaDataset(Dataset):
 
     def __getitem__(self, index):
         datum = self.parsed_json[index]
-        label = datum["annotations"][0]["result"][0]["value"]["text"][0]
+        result = datum["annotations"][0]["result"]
+        if len(result) == 0:
+            print(datum)
+        label = result[0]["value"]["text"][0]
         s3_image_path = datum["data"]["captioning"]
         image = read_image(self.get_file_local_from_s3(s3_image_path))
         return image, label
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+
+    load_dotenv()
     dataset = CaptchaDataset(
         "/pool/storage/projects/textocr/project-2-at-2024-08-06-07-03-5a7af7f3.json"
     )
-
-    for i in dataset:
-        print(i)
-        break
+    print(len(dataset))
+    for image, label in dataset:
+        print(label)

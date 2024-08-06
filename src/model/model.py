@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from typing import List
 
 
 class TextOcrModel(torch.nn.Module):
@@ -21,7 +22,7 @@ class TextOcrModel(torch.nn.Module):
         self.ocr_model.config.length_penalty = 2.0
         self.ocr_model.config.num_beams = 4
 
-    def forward(self, image: torch.Tensor, text: torch.Tensor, device):
+    def forward(self, image: torch.Tensor, text: List[str], device):
         """
         Return the loss value
         image: RGB, BCHW, range [0, 255], uint8
